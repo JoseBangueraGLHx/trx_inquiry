@@ -1,7 +1,7 @@
 import React from "react";
-import { Table, Tag, Button, Space } from "antd";
+import { Table, Tag, Button, Space, Tooltip } from "antd";
 
-const TransactionTable = ({ data, loading, typeSearch }) => {
+const TransactionTable = ({ data, loading, typeSearch, onView }) => {
   console.log("TransactionTable data:", data);
   console.log("TransactionTable typeSearch:", typeSearch);
   const columns = [
@@ -25,10 +25,15 @@ const TransactionTable = ({ data, loading, typeSearch }) => {
       key: "status",
       render: (status) => {
         let color = "default";
-        if (status === "Completed") color = "success";
-        if (status === "Reversed") color = "blue";
-        if (status === "Pending") color = "warning";
-        return <Tag color={color}>{status}</Tag>;
+        if (status === "Completed") color = "#016630";
+        if (status === "Reversed") color = "#2F54EB";
+        if (status === "Pending") color = "#FA541C";
+        if (status === "CompletedError") color = "#016630";
+        return (
+          <Tag color={color} variant="outlined">
+            {status}
+          </Tag>
+        );
       },
     },
     {
@@ -36,12 +41,28 @@ const TransactionTable = ({ data, loading, typeSearch }) => {
       key: "actions",
       render: (_, record) => (
         <Space size="middle">
-          <Button type="link" size="small">
+          <Button type="link" onClick={() => onView(record)}>
             View
           </Button>
-          <Button type="link" size="small" danger disabled={record.status !== "Completed"}>
-            Reverse
-          </Button>
+          <Tooltip
+            // title={
+            //   record.status !== "Completed" ? "The transaction can not be reversed. Please check view details" : ""
+            // }
+            title={
+              record.status === "Pending"
+                ? "The transaction is being reversed. Please check view details"
+                : record.status === "CompletedError"
+                ? "The transaction can not be reversed. Please check view details" //
+                : record.status === "Reversed"
+                ? "The transaction has already been reversed. Please check view details"
+                : "" //
+            }
+            placement="top"
+          >
+            <Button type="link" size="small" danger disabled={record.status !== "Completed"}>
+              Reverse
+            </Button>
+          </Tooltip>
         </Space>
       ),
     },

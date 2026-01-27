@@ -225,11 +225,17 @@ const AgentSearchDrawer = ({ visible, onClose, onSelect }) => {
       {noResultsFound && <WarningAlert />}
 
       <Table
+        rowKey="account"
         rowSelection={rowSelection}
         columns={TABLE_COLUMNS}
         dataSource={dataSource}
         pagination={false}
         locale={{ emptyText: MESSAGES.emptyTable }}
+        onRow={(record) => ({
+          onClick: () => {
+            setSelectedRowKey(record.account);
+          },
+        })}
       />
     </Drawer>
   );

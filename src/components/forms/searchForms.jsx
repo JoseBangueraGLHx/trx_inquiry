@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Form, Input, DatePicker, Select, Button, Row, Col, Tooltip } from "antd";
 import { QuestionCircleOutlined, SearchOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
-import AgentSearchDrawer from "./agentSearchDrawer";
 import { stylesApplyButton } from "../constants";
+import AgentSearchDrawer from "../drawers/agentSearchDrawer";
 
 // Constantes
 const FORM_CONFIG = {
@@ -55,6 +55,7 @@ const extractAccountId = (value) => {
 const formatTypeSearch = (searchBy, account) => {
   const prefix = searchBy === "workstation" ? "WS" : "AG";
   return `${prefix}-${account}`;
+  // return account;
 };
 
 const SearchForm = ({ onSearch, onReset, loading, onTypeSearch }) => {

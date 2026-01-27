@@ -100,6 +100,7 @@ import DynamicBreadcrumb from "../menu/navigationBreadCrumd";
 import SearchForm from "../forms/searchForms";
 import TransactionTable from "../tables/transactionTable";
 import { mockTransactions } from "../../mockData";
+import ReverseTransactionDrawer from "../drawers/reverseViewDrawer";
 
 // Constantes
 const STYLES = {
@@ -152,6 +153,9 @@ const ReversesTransaction = () => {
   const [loading, setLoading] = useState(false);
   const [typeSearch, setTypeSearch] = useState("workstation");
 
+  const [reverseDrawerOpen, setReverseDrawerOpen] = useState(false);
+  const [selectedTx, setSelectedTx] = useState(null);
+
   const hasData = tableData.length > 0;
 
   // Maneja el tipo de búsqueda desde el formulario
@@ -184,6 +188,12 @@ const ReversesTransaction = () => {
     setTableData([]);
   };
 
+  const handleOpenReverse = (transaction) => {
+    console.log("Abriendo transacción:", transaction); // Debug
+    setSelectedTx(transaction);
+    setReverseDrawerOpen(true);
+  };
+
   return (
     <Layout style={STYLES.layout}>
       <Content style={STYLES.content}>
@@ -208,9 +218,16 @@ const ReversesTransaction = () => {
         {/* Tabla de transacciones - solo si hay datos */}
         {!loading && hasData && (
           <Card title="Transactions">
-            <TransactionTable data={tableData} loading={loading} typeSearch={typeSearch} />
+            <TransactionTable data={tableData} loading={loading} typeSearch={typeSearch} onView={handleOpenReverse} />
           </Card>
         )}
+
+        {/* El nuevo Drawer */}
+        <ReverseTransactionDrawer
+          visible={reverseDrawerOpen}
+          transactionData={selectedTx}
+          onClose={() => setReverseDrawerOpen(false)}
+        />
       </Content>
     </Layout>
   );
