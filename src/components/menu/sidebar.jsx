@@ -1,9 +1,10 @@
 import { Layout, Menu } from "antd";
 import { HomeOutlined, RightOutlined, LeftOutlined } from "@ant-design/icons";
+import { SIDEBAR_CONFIG, COLORS_SIDEBAR } from "../../constants/menu";
 
 const { Sider } = Layout;
 
-/* Constantes extraidas para configuración */
+/* Constantes extraidas para configuración 
 
 // Configuración del sidebar
 const SIDEBAR_CONFIG = {
@@ -19,12 +20,13 @@ const COLORS = {
   background: "#141414",
   toggleButton: "#262626",
   text: "#fff",
-};
+};*/
 
 // Items del menú
+// Elementos que aparecen en el menú lateral.
 const MENU_ITEMS = [{ key: "1", icon: <HomeOutlined />, label: "Home", disabled: false }];
 
-// Componente del botón toggle
+// Componente del botón para colapsar o expandir la barra lateral.
 const ToggleButton = ({ collapsed, onClick }) => (
   <div
     style={{
@@ -42,13 +44,13 @@ const ToggleButton = ({ collapsed, onClick }) => (
       style={{
         width: collapsed ? "64px" : "100%",
         height: SIDEBAR_CONFIG.toggleButtonHeight,
-        background: COLORS.toggleButton,
+        background: COLORS_SIDEBAR.toggleButton,
         borderRadius: "8px",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         cursor: "pointer",
-        color: COLORS.text,
+        color: COLORS_SIDEBAR.text,
         transition: "all 0.3s ease",
       }}
     >
@@ -57,6 +59,10 @@ const ToggleButton = ({ collapsed, onClick }) => (
   </div>
 );
 
+// Componente de barra lateral que contiene el menú principal de navegación.
+// Props:
+// - collapsed: indica si el sidebar está colapsado.
+// - setCollapsed: función para alternar el estado de colapso.
 const Sidebar = ({ collapsed, setCollapsed }) => {
   return (
     <Sider
@@ -71,7 +77,7 @@ const Sidebar = ({ collapsed, setCollapsed }) => {
         left: 0,
         top: SIDEBAR_CONFIG.headerHeight,
         bottom: 0,
-        background: COLORS.background,
+        background: COLORS_SIDEBAR.background,
         zIndex: 1000,
       }}
     >

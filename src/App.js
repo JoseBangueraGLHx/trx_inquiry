@@ -1,12 +1,47 @@
-import "./App.css";
-import { Routes, Route } from "react-router-dom";
-import ReversesTransaction from "./components/dashboard/reverses";
+import React from "react";
+import { Routes, Route, useNavigate } from "react-router-dom";
+import { Security, LoginCallback } from "@okta/okta-react";
+import { OktaAuth } from "@okta/okta-auth-js";
+
+import { oktaConfig } from "./okta/oktaConfig";
+import RequireAuth from "./auth/requireAuth";
+import Login from "./auth/login";
+import MainLayout from "./components/menu/mainLayout";
+
+import TransactionInquiry from "./components/dashboard/transactionInquiry";
+
+// Creamos Okta una sola vez
+const oktaAuth = new OktaAuth(oktaConfig);
 
 function App() {
+  const navigate = useNavigate();
+
+  const restoreOriginalUri = async (_oktaAuth, originalUri) => {
+    navigate(originalUri || "/", { replace: true });
+  };
+
   return (
-    <Routes>
-      <Route path="/" element={<ReversesTransaction />} />
-    </Routes>
+    <Security oktaAuth={oktaAuth} restoreOriginalUri={restoreOriginalUri}>
+      <Routes>
+        {/* Okta callback */}
+        <Route path="/auth/callback" element={<LoginCallback />} />
+
+        {/* Login */}
+        <Route path="/login" element={<Login />} />
+
+        {/* Protected routes */}
+        <Route
+          path="/"
+          element={
+            <RequireAuth>
+              <MainLayout>
+                <TransactionInquiry />
+              </MainLayout>
+            </RequireAuth>
+          }
+        />
+      </Routes>
+    </Security>
   );
 }
 

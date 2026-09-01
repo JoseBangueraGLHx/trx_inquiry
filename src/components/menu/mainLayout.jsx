@@ -2,11 +2,12 @@ import { useState } from "react";
 import { ConfigProvider, Layout } from "antd";
 import TopHeader from "./topHeader";
 import Sidebar from "./sidebar";
+import { LAYOUT_CONFIG, THEME_CONFIG, COLORS_MAINLAYOUT } from "../../constants/menu";
 
 const { Content } = Layout;
 
 /* Constantes de configuración de diseño */
-
+/*
 // Configuración de diseño
 const LAYOUT_CONFIG = {
   sidebarWidth: {
@@ -34,7 +35,10 @@ const THEME_CONFIG = {
 const COLORS = {
   background: "#f5f5f5",
 };
-
+*/
+// Layout principal de la aplicación que incluye header, sidebar y contenido.
+// Props:
+// - children: contenido que se muestra dentro del área principal.
 const MainLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(true);
 
@@ -50,7 +54,7 @@ const MainLayout = ({ children }) => {
             style={{
               marginLeft,
               transition: "all 0.2s",
-              background: COLORS.background,
+              background: COLORS_MAINLAYOUT.background,
               minHeight: "100vh",
             }}
           >

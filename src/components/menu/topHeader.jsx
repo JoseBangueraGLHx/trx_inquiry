@@ -1,5 +1,6 @@
 import { Layout, Row, Col, Space } from "antd";
 import { MenuOutlined } from "@ant-design/icons";
+import LogoutButton from "../../auth/logout";
 // import LogoutButton from "../../auth/logout";
 
 const { Header } = Layout;
@@ -45,7 +46,8 @@ const AppHeader = () => {
     <Header
       style={{
         position: "fixed",
-        zIndex: 1001,
+        //zIndex: 1001, probando drawer
+        zIndex: 1,
         width: "100%",
         background: COLORS.background,
         alignItems: "center",
@@ -77,8 +79,7 @@ const AppHeader = () => {
         {/* Sección derecha */}
         <Col flex="none">
           <Space size="middle" style={{ paddingRight: 35 }}>
-            Log Out
-            {/* <LogoutButton style={{ color: COLORS.text, fontSize: 18 }} /> */}
+            <LogoutButton style={{ color: COLORS.text, fontSize: 18 }} />
           </Space>
         </Col>
       </Row>

@@ -1,104 +1,154 @@
+// Mock data for Account ID Drawer search & choices
+export const mockAccountSearchResults = [
+  {
+    organization: "Movistar",
+    key: "movistar",
+    accounts: [
+      { key: "mov1", account: "AG - 12345670", name: "Movistar Movil" },
+      { key: "mov2", account: "AG - 12345671", name: "Movistar Hogar" },
+    ],
+  },
+  {
+    organization: "Personal",
+    key: "personal",
+    accounts: [
+      { key: "per1", account: "AG - 12345672", name: "Personal Movil" },
+      { key: "per2", account: "AG - 12345673", name: "Personal Fibra" },
+      { key: "per3", account: "AG - 12345674", name: "Personal Flow" },
+      { key: "per4", account: "AG - 12345675", name: "Personal Pay" },
+    ],
+  },
+  {
+    organization: "Telecom",
+    key: "telecom",
+    accounts: [
+      { key: "tel1", account: "AG - 12345676", name: "Telecom Empresas" },
+      { key: "tel2", account: "AG - 12345677", name: "Telecom Redes" },
+    ],
+  },
+];
+
+// Mock data for Table Transactions matching table1.png
 export const mockTransactions = [
   {
-    key: "TXN0001",
-    transactionId: "TXN0001",
-    controlSignature: "CS-2025-0012",
-    workstation: "WS-ABCD1234",
-    paycode: "PC-2152M601",
-    date: "23/01/2026 16:42:50",
-    amount: 13897.0,
-    currency: "ARS",
-    status: "Completed",
-    agentAccount: "AG-87654321",
-  },
-  {
-    key: "TXN0002",
-    transactionId: "TXN0002",
-    controlSignature: "CS-2025-0001",
-    workstation: "WS-ABCD1234",
-    paycode: "PC-12A34574",
-    date: "23/01/2026 12:34:59",
-    amount: 5276.0,
+    key: "TXN005",
+    transactionId: "TXN005",
+    billerName: "Personal Movil",
+    billerAccount: "BAC - 00101010101010110",
+    transactionDttm: "11:08:2025 04:30:00",
+    transactionAmt: 210000.0,
     currency: "ARS",
     status: "Reversed",
-    agentAccount: "AG-87654321",
   },
   {
-    key: "TXN0003",
-    transactionId: "TXN0003",
-    controlSignature: "CS-2025-0002",
-    workstation: "WS-ABCD1234",
-    paycode: "PC-87B9M723",
-    date: "23/01/2026 01:10:25",
-    amount: 22317.0,
+    key: "TXN004",
+    transactionId: "TXN004",
+    billerName: "Personal Movil",
+    billerAccount: "BAC - 00101010101010110",
+    transactionDttm: "11:08:2025 04:30:00",
+    transactionAmt: 220000.0,
     currency: "ARS",
-    status: "Pending",
-    agentAccount: "AG-87654321",
+    status: "Rejected",
   },
   {
-    key: "TXN0004",
-    transactionId: "TXN0004",
-    controlSignature: "CS-2025-0003",
-    workstation: "WS-ABCD1234",
-    paycode: "PC-45C66578",
-    date: "23/01/2026 02:05:06",
-    amount: 24471.0,
+    key: "TXN003",
+    transactionId: "TXN003",
+    billerName: "Personal Movil",
+    billerAccount: "BAC - 00101010101010110",
+    transactionDttm: "11:08:2025 04:30:00",
+    transactionAmt: 230000.0,
     currency: "ARS",
-    status: "CompletedError",
-    agentAccount: "AG-87654321",
+    status: "Rejected",
+  },
+  {
+    key: "TXN002",
+    transactionId: "TXN002",
+    billerName: "Personal Movil",
+    billerAccount: "BAC - 00101010101010110",
+    transactionDttm: "11:08:2025 04:30:00",
+    transactionAmt: 240000.0,
+    currency: "ARS",
+    status: "Completed",
+  },
+  {
+    key: "TXN010",
+    transactionId: "TXN010",
+    billerName: "Personal Movil",
+    billerAccount: "BAC - 00101010101010110",
+    transactionDttm: "11:08:2025 04:30:00",
+    transactionAmt: 250000.0,
+    currency: "ARS",
+    status: "Reversed",
+  },
+  {
+    key: "TXN011",
+    transactionId: "TXN011",
+    billerName: "Personal Movil",
+    billerAccount: "BAC - 00101010101010110",
+    transactionDttm: "11:08:2025 04:30:00",
+    transactionAmt: 260000.0,
+    currency: "ARS",
+    status: "Completed",
+  },
+  {
+    key: "TXN012",
+    transactionId: "TXN012",
+    billerName: "Personal Movil",
+    billerAccount: "BAC - 00101010101010110",
+    transactionDttm: "11:08:2025 04:30:00",
+    transactionAmt: 270000.0,
+    currency: "ARS",
+    status: "Completed",
+  },
+  {
+    key: "TXN013",
+    transactionId: "TXN013",
+    billerName: "Personal Movil",
+    billerAccount: "BAC - 00101010101010110",
+    transactionDttm: "11:08:2025 04:30:00",
+    transactionAmt: 210000.0,
+    currency: "ARS",
+    status: "Reversed",
   },
 ];
 
-export const mockDataWorkstation = [
-  { key: "ABCD1234", account: "ABCD1234", name: "kiosko Calamuchita" },
-  { key: "22222222", account: "22222222", name: "Gonza" },
-  { key: "33333333", account: "33333333", name: "Mati" },
-];
-
-export const mockDataAccountId = [
-  { key: "87654321", account: "87654321", name: "Agent One" },
-  { key: "12345678", account: "12345678", name: "Agent Two" },
-  { key: "11223344", account: "11223344", name: "Agent Three" },
-];
-
-export const dataDrawerView = [
-  {
-    controlSignature: "CS-2025-008",
-    amount: "ARS 210000.00",
-    workstation: "WS-ABCD1234",
-    paymentMethod: "Credit",
-    financialAmount: "ARS 210,000.00",
-    commission: "ARS 4,200.00",
-    taxes: "ARS 0.00",
-    netAmount: "ARS 205,800.00",
-    externalReference: "TXN-966334",
-    createdBy: "central.station.kiosk@westernunion.com",
-    source: "Call Center",
-    transactionType: "Payment",
-    description: "Internet Service Payment",
-    systemReference: "TXN027",
+// Mock data for Transaction Details Drawer matching detail1.png
+export const mockTransactionDetailData = {
+  transactionId: "TXN005",
+  statusCd: "Reversed",
+  operationStage: "Stage 3", // validar que campo es del swagger
+  controlSignatureCd: "CS-2025-008",
+  ordererBusinessRefTxt: "{Orderer Business Reference}",
+  beneficiaryBusinessRefTxt: "{Beneficiary Business Reference}",
+  amount: "ARS 210000.00", // Validar que campo es del swagger
+  paymentMethodCd: "{ Debit / Credit }",
+  channelStatusCd: "Completed",
+  creationDate: "01-05-2026 04:30:00", // Validar que campo es del swagger
+  dueDate: "01-15-2026", // Validar que campo es del swagger o si es dueDttm
+  caseInformation: {
+    requesterName: "Harry and Lloyd", // Validar que campo es del swagger
+    reason: "customer_request", // Validar que campo es del swagger
+    comment: "He wants to return it to her and hopefully win her heart in the process.", // Validar que campo es del swagger
+    reversedBy: "Internal User (Back-Office)", // Validar que campo es del swagger
+    reversedAt: "Nov 26, 2025 10:57:44", // Validar que campo es del swagger
   },
-];
-
-export const historyData = [
-  {
-    date: "2025/10/16 - 09:00",
-    description: "Submitted by John Doe",
-    status: "done",
+  consolidateKey: {
+    numberValue: "{ Number value }", // Validar que campo es del swagger
+    taxValue: "( Currency E.g. (IVA) ARS $Tax value )", // Validar que campo es del swagger
   },
-  {
-    date: "2025/10/16 - 09:00",
-    description: "Approved by Felipe Shikasho",
-    status: "done",
+  financialBreakdown: {
+    amount: "ARS$150,000.00", // Validar que campo es del swagger
+    charges: "ARS$280.75", // Validar que campo es del swagger
+    fee: "ARS$275.50", // Validar que campo es del swagger
+    commission: "ARS$4,200.00", // Validar que campo es del swagger
+    netAmount: "ARS $205,800.00", // Validar que campo es del swagger
   },
-  {
-    date: "2025/10/16 - 09:00",
-    description: "Processing by ACM System",
-    status: "pending",
+  transactionInfo: {
+    externalReferenceId: "TXN-968334",
+    createdByTxt: "central.station.kiosk@westernunion.com",
+    sourceCd: "Call Center",
+    transactionTypeCd: "Payment",
+    transactionDesc: "Internet Service Payment",
+    systemReferenceId: "TXN027",
   },
-  {
-    date: "2025/10/16 - 09:00",
-    description: "Transaction Completed by ACM System",
-    status: "done",
-  },
-];
+};
