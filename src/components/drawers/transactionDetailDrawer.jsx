@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Drawer, Alert, Tag, Typography, Row, Col, Collapse, Input, Select, Button, Dropdown, Space } from "antd";
-import { ExportOutlined, DownOutlined, ArrowLeftOutlined, ExclamationCircleFilled } from "@ant-design/icons";
+import { Drawer, Alert, Tag, Typography, Row, Col, Collapse, Input, Select, Button } from "antd";
+import { ArrowLeftOutlined, ExclamationCircleFilled } from "@ant-design/icons";
 import { mockTransactionDetailData } from "../../mockData";
 
 const { Text, Title } = Typography;
@@ -15,12 +15,6 @@ const TransactionDetailDrawer = ({ open, onClose, transaction }) => {
   // Controla la visibilidad del aviso de alerta en el drawer.
   const [alertVisible, setAlertVisible] = useState(true);
   const data = mockTransactionDetailData;
-
-  // Opciones del menú de exportación de detalles.
-  const exportMenuItems = [
-    { key: "1", label: "Export as PDF" },
-    { key: "2", label: "Export as Excel" },
-  ];
 
   // Contenido del panel de información del caso (Case Information).
   const caseInformationContent = (
