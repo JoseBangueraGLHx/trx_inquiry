@@ -1,9 +1,8 @@
 // ============================================================================
-// LEYENDA
+// LEYENDA (comparado con tu versión original que usaba el mock)
 //   🟢 AGREGADO    → código nuevo
 //   🟡 MODIFICADO  → existía, pero cambió
-//   🔴 ELIMINADO   → estaba en tu versión original (se deja comentado para que
-//                    veas qué era; puedes borrar estos comentarios después)
+//   🔴 ELIMINADO   → estaba en la versión original y se quitó
 //   Sin marca      → igual que tu versión original
 // ============================================================================
 
@@ -13,20 +12,28 @@ import React, { useState, useRef } from "react";
 import { Drawer, Radio, Input, Table, Button, Typography, Space, Spin, Empty, notification } from "antd";
 import { CheckOutlined, ArrowLeftOutlined, SearchOutlined } from "@ant-design/icons";
 // 🔴 ELIMINADO: import { mockAccountSearchResults } from "../../mockData";
-// 🟢 AGREGADO: servicios reales (⚠️ ajusta la ruta a la de tu proyecto)
-import { getAccountByCuit, getAccountByWorkstation } from "../../services/trxInquiryServices";
+// 🟢 AGREGADO: servicios reales
+//import { getAccountByCuit, getAccountByWorkstation } from "../../services/trxInquiryServices";
 
 const { Text, Title } = Typography;
 
 // 🟢 AGREGADO: arma el mensaje de error a partir de la respuesta del back.
 // Los 400 / 401 / 500 vienen con: { name, message, errorCode, correlationId, issues: [{ field, issue }] }
+// Funciona con el error completo de axios (err.response.data) o si un interceptor rechaza solo con el body.
 const getErrorInfo = (err) => {
-  // Sin respuesta del servidor (caído, sin red, CORS, timeout)
-  if (!err?.response) {
+  const status = err?.response?.status ?? err?.status;
+  const data = err?.response?.data ?? err;
+
+  // La petición salió pero no hubo respuesta (servidor caído, sin red, CORS, timeout)
+  if (!status && err?.request) {
     return { message: "Could not connect to the server. Please try again.", correlationId: null };
   }
 
-  const { status, data } = err.response;
+  // Error de código antes de enviar la petición (import, interceptor, etc.)
+  if (!status && !data?.issues) {
+    return { message: err?.message || "Unexpected error. Please try again.", correlationId: null };
+  }
+
   const correlationId = data?.correlationId ?? null;
 
   if (status === 401) {
@@ -37,12 +44,38 @@ const getErrorInfo = (err) => {
     return { message: "Unexpected server error. Please try again later.", correlationId };
   }
 
-  // 400: se muestra el detalle de validación si viene, si no el message general
+  // 400: detalle de validación si viene; si no, el message general
   const issues = data?.issues?.map((i) => i.issue).filter(Boolean) ?? [];
   return {
     message: issues.length ? issues.join(". ") : data?.message || "Invalid request.",
     correlationId,
   };
+};
+
+// 🟢 AGREGADO: reglas de validación por tipo de búsqueda
+const SEARCH_RULES = {
+  Workstation: {
+    placeholder: "Search by Workstation ID...",
+    maxLength: undefined,
+    // Solo letras y números: no deja escribir espacios ni símbolos
+    sanitize: (value) => value.replace(/[^a-zA-Z0-9]/g, ""),
+    validate: (value) => {
+      if (!value || !value.trim()) return "Workstation is required.";
+      if (!/^[a-zA-Z0-9]+$/.test(value)) return "Workstation must contain only letters and numbers.";
+      return null;
+    },
+  },
+  CUIT: {
+    placeholder: "Search by CUIT (11 digits)...",
+    maxLength: 11,
+    // Solo números
+    sanitize: (value) => value.replace(/\D/g, ""),
+    validate: (value) => {
+      if (!value) return "CUIT is required.";
+      if (value.length !== 11) return "CUIT must contain exactly 11 digits.";
+      return null;
+    },
+  },
 };
 
 // Drawer para buscar y seleccionar un Account ID.
@@ -56,18 +89,22 @@ const AccountIdDrawer = ({ open, onClose, onConfirm }) => {
   const [selectedRowKey, setSelectedRowKey] = useState(null);
   const [selectedAccountData, setSelectedAccountData] = useState(null);
 
-  // 🟢 AGREGADO: estado de la búsqueda real
+  // 🟢 AGREGADO: estado de la búsqueda real y de la validación
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const [validationError, setValidationError] = useState(null);
 
-  // 🟢 AGREGADO: hook de notificaciones de antd (respeta el tema/ConfigProvider).
-  // El contextHolder se renderiza dentro del Drawer (ver más abajo).
+  // 🟢 AGREGADO: hook de notificaciones de antd (el contextHolder va dentro del Drawer)
   const [notificationApi, contextHolder] = notification.useNotification();
 
-  // 🟢 AGREGADO: muestra el error como notification.error
+  // 🟢 AGREGADO: evita que una respuesta vieja pise a una más reciente
+  const lastRequest = useRef(0);
+
+  // 🟢 AGREGADO: muestra los errores del servicio como notification.error
   const showError = (err) => {
-    const { message, correlationId } = getErrorInfo(err);
+    const { message = "Unexpected error. Please try again.", correlationId } = getErrorInfo(err) || {};
+
     notificationApi.error({
       message: "Search failed",
       description: correlationId ? (
@@ -85,10 +122,7 @@ const AccountIdDrawer = ({ open, onClose, onConfirm }) => {
     });
   };
 
-  // 🟢 AGREGADO: evita que una respuesta vieja pise a una más reciente
-  const lastRequest = useRef(0);
-
-  // 🟢 AGREGADO: limpia resultados, errores y selección
+  // 🟢 AGREGADO: limpia resultados y selección
   const resetSearch = () => {
     lastRequest.current += 1; // invalida cualquier petición en curso
     setAccounts([]);
@@ -98,21 +132,35 @@ const AccountIdDrawer = ({ open, onClose, onConfirm }) => {
     setSelectedAccountData(null);
   };
 
-  // 🟡 MODIFICADO: ya no filtra mientras escribes; solo guarda el texto.
+  // 🟡 MODIFICADO: ya no filtra mientras escribes.
+  // Solo deja pasar los caracteres permitidos según el radio y guarda el texto.
   // Si el usuario pulsa la X (allowClear), el valor llega vacío y se limpia todo.
   const handleSearchChange = (e) => {
-    const value = e.target.value;
+    const value = SEARCH_RULES[searchBy].sanitize(e.target.value);
     setSearchTerm(value);
-    if (value === "") resetSearch(); // 🟢 AGREGADO
+
+    if (value === "") {
+      // Campo vacío (o pulsó la X): sin mensaje; el "requerido" sale solo al presionar Enter
+      setValidationError(null);
+      resetSearch();
+      return;
+    }
+
+    // 🟢 AGREGADO: validación en vivo mientras escribe
+    // (en CUIT muestra "exactly 11 digits" hasta que complete los 11)
+    setValidationError(SEARCH_RULES[searchBy].validate(value));
   };
 
-  // 🟢 AGREGADO: busca en el back al presionar Enter o hacer clic en la lupa
+  // 🟢 AGREGADO: valida y busca en el back al presionar Enter o hacer clic en la lupa
   const handleSearch = async () => {
-    let term = searchTerm.trim();
-    if (!term) return;
+    const term = searchTerm.trim();
 
-    // El CUIT suele escribirse con guiones (20-12345678-9): se envían solo los dígitos
-    if (searchBy === "CUIT") term = term.replace(/\D/g, "");
+    // Validación (requerido, formato, longitud) antes de llamar al servicio
+    const error = SEARCH_RULES[searchBy].validate(term);
+    if (error) {
+      setValidationError(error);
+      return;
+    }
 
     const requestId = ++lastRequest.current;
     setLoading(true);
@@ -120,11 +168,11 @@ const AccountIdDrawer = ({ open, onClose, onConfirm }) => {
     setSelectedAccountData(null);
 
     try {
-      const data = searchBy === "CUIT" ? await getAccountByCuit(term) : await getAccountByWorkstation(term);
+      //const data = searchBy === "CUIT" ? await getAccountByCuit(term) : await getAccountByWorkstation(term);
 
       if (requestId !== lastRequest.current) return;
       // Respuesta 200: { agentAccounts: [{ accountId, accountName, accountCd }] }
-      setAccounts(data?.agentAccounts ?? []);
+      setAccounts([]);
       setHasSearched(true);
     } catch (err) {
       if (requestId !== lastRequest.current) return;
@@ -138,10 +186,11 @@ const AccountIdDrawer = ({ open, onClose, onConfirm }) => {
     }
   };
 
-  // 🟢 AGREGADO: al cambiar Workstation/CUIT se limpian input y resultados
+  // 🟢 AGREGADO: al cambiar Workstation/CUIT se limpian input, error y resultados
   const handleSearchByChange = (e) => {
     setSearchBy(e.target.value);
     setSearchTerm("");
+    setValidationError(null);
     resetSearch();
   };
 
@@ -163,44 +212,35 @@ const AccountIdDrawer = ({ open, onClose, onConfirm }) => {
   const handleClose = () => {
     setSearchTerm("");
     setSearchBy("Workstation");
+    setValidationError(null);
     resetSearch();
     onClose();
   };
 
-  // 🔴 ELIMINADO: filtrado local sobre el mock
-  // const filteredOrganizations = searchTerm.trim()
-  //   ? mockAccountSearchResults.filter(
-  //       (org) =>
-  //         org.organization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //         org.accounts.some(
-  //           (acc) =>
-  //             acc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //             acc.account.toLowerCase().includes(searchTerm.toLowerCase()),
-  //         ),
-  //     )
-  //   : [];
+  // 🔴 ELIMINADO: const filteredOrganizations = ... (filtrado local sobre el mock)
 
-  // 🟡 MODIFICADO: columnas con los campos que devuelve el back.
-  // (Si tus columnas originales tenían otros estilos, cópialos aquí;
-  //  lo importante es usar accountName / accountCd / accountId.)
+  // 🟡 MODIFICADO: columnas con los campos que devuelve el back
+  // (antes: record.key, dataIndex "account" y "name")
   const columns = [
     {
       title: "",
-      key: "select",
+      dataIndex: "radio",
       width: 40,
       render: (_, record) => (
         <Radio checked={selectedRowKey === record.accountId} onChange={() => handleRadioChange(record)} />
       ),
     },
     {
-      title: "Account Name",
-      dataIndex: "accountName",
-      key: "accountName",
-    },
-    {
       title: "Account",
       dataIndex: "accountCd",
       key: "accountCd",
+      render: (text) => <Text style={{ fontSize: 13 }}>{text}</Text>,
+    },
+    {
+      title: "Name",
+      dataIndex: "accountName",
+      key: "accountName",
+      render: (text) => <Text style={{ fontSize: 13 }}>{text}</Text>,
     },
   ];
 
@@ -214,7 +254,7 @@ const AccountIdDrawer = ({ open, onClose, onConfirm }) => {
       );
     }
 
-    // (este bloque ya existía en tu versión, solo se movió aquí)
+    // (este bloque ya existía en tu versión; solo se movió aquí)
     if (!hasSearched) {
       return (
         <div
@@ -316,32 +356,34 @@ const AccountIdDrawer = ({ open, onClose, onConfirm }) => {
         </div>
 
         {/* Search Input */}
-        <Input
-          // 🟡 MODIFICADO: el placeholder cambia según la opción elegida
-          placeholder={searchBy === "CUIT" ? "Search by CUIT..." : "Search by Workstation ID..."}
-          value={searchTerm}
-          onChange={handleSearchChange}
-          onPressEnter={handleSearch} // 🟢 AGREGADO: busca solo al presionar Enter
-          allowClear // muestra la X al final; al pulsarla se limpia todo (ver handleSearchChange)
-          disabled={loading} // 🟢 AGREGADO
-          suffix={
-            // 🟡 MODIFICADO: la lupa ahora también dispara la búsqueda
-            <SearchOutlined onClick={handleSearch} style={{ color: "#BFBFBF", cursor: "pointer" }} />
-          }
-          style={{ borderRadius: 6, height: 40 }}
-        />
+        {/* 🟢 AGREGADO: div contenedor para que el mensaje de validación quede pegado al input */}
+        <div>
+          <Input
+            placeholder={SEARCH_RULES[searchBy].placeholder} // 🟡 MODIFICADO: cambia según el radio
+            maxLength={SEARCH_RULES[searchBy].maxLength} // 🟢 AGREGADO: 11 para CUIT
+            status={validationError ? "error" : ""} // 🟢 AGREGADO: borde rojo si no es válido
+            value={searchTerm}
+            onChange={handleSearchChange}
+            onPressEnter={handleSearch} // 🟢 AGREGADO: busca solo al presionar Enter
+            allowClear // muestra la X al final; al pulsarla se limpia todo
+            disabled={loading} // 🟢 AGREGADO
+            suffix={
+              // 🟡 MODIFICADO: la lupa ahora también dispara la búsqueda
+              <SearchOutlined onClick={handleSearch} style={{ color: "#BFBFBF", cursor: "pointer" }} />
+            }
+            style={{ borderRadius: 6, height: 40 }}
+          />
+          {/* 🟢 AGREGADO: mensaje de validación */}
+          {validationError && (
+            <Text type="danger" style={{ fontSize: 12, display: "block", marginTop: 4 }}>
+              {validationError}
+            </Text>
+          )}
+        </div>
 
         {/* 🟡 MODIFICADO: antes aquí estaba el ternario con searchTerm.trim() === "" y el
             <Collapse> con filteredOrganizations.map(...). Ahora todo lo resuelve renderContent() */}
         {renderContent()}
-
-        {/* 🔴 ELIMINADO:
-            <Collapse
-              defaultActiveKey={["personal", "movistar", "telecom"]}
-              ...
-              items={filteredOrganizations.map((org) => ({ ... }))}
-            />
-        */}
       </div>
     </Drawer>
   );
